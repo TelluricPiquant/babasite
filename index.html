@@ -82,10 +82,11 @@
     margin:0;
     break-inside:avoid;
   }
-  figure img{
+  figure img, figure video{
     width:100%;
     display:block;
     border-radius:2px;
+    background:#000;
   }
   figcaption{
     margin-top:0.6rem;
@@ -140,17 +141,25 @@
 
 <header>
   <h1>Baba</h1>
-  <p>music &amp; photos</p>
+  <p>music, photos &amp; videos</p>
 </header>
 
 <nav>
   <a href="#photos">Photos</a>
+  <a href="#videos">Videos</a>
   <a href="#music">Music</a>
 </nav>
 
 <section id="photos">
   <h2>Photos</h2>
   <div id="photo-grid" class="grid">
+    <p class="empty">Loading…</p>
+  </div>
+</section>
+
+<section id="videos">
+  <h2>Videos</h2>
+  <div id="video-grid" class="grid">
     <p class="empty">Loading…</p>
   </div>
 </section>
@@ -162,11 +171,11 @@
   </div>
 </section>
 
-<footer>Updated automatically. Just add files to the <code>photos</code> or <code>music</code> folders.</footer>
+<footer>Updated automatically. Just add files to the <code>photos</code>, <code>videos</code>, or <code>music</code> folders.</footer>
 
 <script>
   // ====== SETUP: fill these in once you make your GitHub repo ======
-  const GH_USER = "TelluricPiquant";
+  const GH_USER = "telluricpiquant";
   const GH_REPO = "babasite";
   const GH_BRANCH = "main";
   // ===================================================================
@@ -213,6 +222,28 @@
     }).join("");
   }
 
+  async function renderVideos(){
+    const grid = document.getElementById("video-grid");
+    const files = await listFolder("videos");
+    const clips = files.filter(f => /\.(mp4|mov|webm)$/i.test(f.name));
+    if(clips.length === 0){
+      grid.innerHTML = '<p class="empty">No videos yet.</p>';
+      return;
+    }
+    grid.innerHTML = clips.map(f => {
+      const { title, caption } = parseName(f.name);
+      return `
+        <figure>
+          <video controls preload="metadata" src="${RAW_BASE}videos/${encodeURIComponent(f.name)}"></video>
+          <figcaption>
+            <div class="title">${title}</div>
+            ${caption ? `<div class="caption">${caption}</div>` : ""}
+          </figcaption>
+        </figure>
+      `;
+    }).join("");
+  }
+
   async function renderMusic(){
     const list = document.getElementById("music-list");
     const files = await listFolder("music");
@@ -234,6 +265,7 @@
   }
 
   renderPhotos();
+  renderVideos();
   renderMusic();
 </script>
 
