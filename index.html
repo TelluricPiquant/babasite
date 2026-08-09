@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>James</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500&display=swap');
+
+  :root{
+    --paper:#f7f5f0;
+    --ink:#1f1d1a;
+    --ink-soft:#6b665e;
+    --line:#e0dcd2;
+    --accent:#2f4d3a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+
+  header{
+    padding:5rem 1.5rem 3rem;
+    text-align:center;
+  }
+  header h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:clamp(2.5rem,7vw,4.5rem);
+    margin:0;
+    letter-spacing:-0.02em;
+  }
+  header p{
+    color:var(--ink-soft);
+    font-size:1rem;
+    margin-top:0.5rem;
+  }
+
+  nav{
+    display:flex;
+    justify-content:center;
+    gap:2rem;
+    padding-bottom:2.5rem;
+    border-bottom:1px solid var(--line);
+    margin:0 1.5rem;
+  }
+  nav a{
+    text-decoration:none;
+    font-size:0.85rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    padding-bottom:4px;
+    border-bottom:2px solid transparent;
+  }
+  nav a:hover{ color:var(--ink); border-color:var(--accent); }
+
+  section{
+    max-width:1000px;
+    margin:0 auto;
+    padding:4rem 1.5rem;
+  }
+  section h2{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:1.6rem;
+    margin-bottom:2rem;
+  }
+
+  /* Photos grid */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+    gap:1.5rem;
+  }
+  figure{
+    margin:0;
+    break-inside:avoid;
+  }
+  figure img{
+    width:100%;
+    display:block;
+    border-radius:2px;
+  }
+  figcaption{
+    margin-top:0.6rem;
+  }
+  figcaption .title{
+    font-weight:500;
+    font-size:0.95rem;
+  }
+  figcaption .caption{
+    color:var(--ink-soft);
+    font-size:0.85rem;
+    margin-top:2px;
+  }
+
+  /* Music list */
+  .track{
+    display:flex;
+    flex-direction:column;
+    gap:0.5rem;
+    padding:1.25rem 0;
+    border-bottom:1px solid var(--line);
+  }
+  .track:last-child{ border-bottom:none; }
+  .track .title{
+    font-weight:500;
+    font-size:1.05rem;
+  }
+  .track .caption{
+    color:var(--ink-soft);
+    font-size:0.85rem;
+  }
+  audio{
+    width:100%;
+    height:36px;
+  }
+
+  .empty{
+    color:var(--ink-soft);
+    font-size:0.9rem;
+    font-style:italic;
+  }
+
+  footer{
+    text-align:center;
+    padding:3rem 1.5rem 4rem;
+    color:var(--ink-soft);
+    font-size:0.8rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>James</h1>
+  <p>music &amp; photos</p>
+</header>
+
+<nav>
+  <a href="#photos">Photos</a>
+  <a href="#music">Music</a>
+</nav>
+
+<section id="photos">
+  <h2>Photos</h2>
+  <div id="photo-grid" class="grid">
+    <p class="empty">Loading…</p>
+  </div>
+</section>
+
+<section id="music">
+  <h2>Music</h2>
+  <div id="music-list">
+    <p class="empty">Loading…</p>
+  </div>
+</section>
+
+<footer>Updated automatically. Just add files to the <code>photos</code> or <code>music</code> folders.</footer>
+
+<script>
+  // ====== SETUP: fill these in once you make your GitHub repo ======
+  const GH_USER = "YOUR-GITHUB-USERNAME";
+  const GH_REPO = "YOUR-REPO-NAME";
+  const GH_BRANCH = "main";
+  // ===================================================================
+
+  const RAW_BASE = `https://raw.githubusercontent.com/${GH_USER}/${GH_REPO}/${GH_BRANCH}/`;
+
+  // Parses "Title -- caption text.jpg" into { title, caption }
+  // If there's no "--", the whole filename (minus extension) becomes the title.
+  function parseName(filename){
+    const noExt = filename.replace(/\.[^/.]+$/, "");
+    const parts = noExt.split("--");
+    const title = parts[0].trim();
+    const caption = parts.length > 1 ? parts.slice(1).join("--").trim() : "";
+    return { title, caption };
+  }
+
+  async function listFolder(folder){
+    const res = await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${folder}?ref=${GH_BRANCH}`);
+    if(!res.ok) return [];
+    const data = await res.json();
+    if(!Array.isArray(data)) return [];
+    return data.filter(f => f.type === "file" && !f.name.startsWith("."));
+  }
+
+  async function renderPhotos(){
+    const grid = document.getElementById("photo-grid");
+    const files = await listFolder("photos");
+    const images = files.filter(f => /\.(jpe?g|png|webp|gif)$/i.test(f.name));
+    if(images.length === 0){
+      grid.innerHTML = '<p class="empty">No photos yet.</p>';
+      return;
+    }
+    grid.innerHTML = images.map(f => {
+      const { title, caption } = parseName(f.name);
+      return `
+        <figure>
+          <img src="${RAW_BASE}photos/${encodeURIComponent(f.name)}" alt="${title}" loading="lazy">
+          <figcaption>
+            <div class="title">${title}</div>
+            ${caption ? `<div class="caption">${caption}</div>` : ""}
+          </figcaption>
+        </figure>
+      `;
+    }).join("");
+  }
+
+  async function renderMusic(){
+    const list = document.getElementById("music-list");
+    const files = await listFolder("music");
+    const tracks = files.filter(f => /\.(mp3|wav|m4a|ogg)$/i.test(f.name));
+    if(tracks.length === 0){
+      list.innerHTML = '<p class="empty">No tracks yet.</p>';
+      return;
+    }
+    list.innerHTML = tracks.map(f => {
+      const { title, caption } = parseName(f.name);
+      return `
+        <div class="track">
+          <div class="title">${title}</div>
+          ${caption ? `<div class="caption">${caption}</div>` : ""}
+          <audio controls src="${RAW_BASE}music/${encodeURIComponent(f.name)}"></audio>
+        </div>
+      `;
+    }).join("");
+  }
+
+  renderPhotos();
+  renderMusic();
+</script>
+
+</body>
+</html>
