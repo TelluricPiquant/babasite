@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music — Baba</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1><a href="index.html">Baba</a></h1>
+</header>
+
+<nav>
+  <a href="photos.html">Photos</a>
+  <a href="videos.html">Videos</a>
+  <a href="music.html" class="active">Music</a>
+  <a href="atlas.html">Atlas</a>
+</nav>
+
+<section id="music">
+  <h2>Music</h2>
+  <div id="music-list">
+    <p class="empty">Loading…</p>
+  </div>
+</section>
+
+<footer>File name becomes the track title. Add <code> -- caption text</code> for a subtitle.</footer>
+
+<script src="script.js"></script>
+<script>
+  async function renderMusic(){
+    const list = document.getElementById("music-list");
+    const files = await listFolder("music");
+    const tracks = files.filter(f => /\.(mp3|wav|m4a|ogg)$/i.test(f.name));
+    if(tracks.length === 0){
+      list.innerHTML = '<p class="empty">No tracks yet.</p>';
+      return;
+    }
+    list.innerHTML = tracks.map(f => {
+      const { title, caption } = parseMusicName(f.name);
+      return `
+        <div class="track">
+          <div class="title">${title}</div>
+          ${caption ? `<div class="caption">${caption}</div>` : ""}
+          <audio controls src="${RAW_BASE}music/${encodeURIComponent(f.name)}"></audio>
+        </div>
+      `;
+    }).join("");
+  }
+  renderMusic();
+</script>
+
+</body>
+</html>

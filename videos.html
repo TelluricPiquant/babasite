@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Videos — Baba</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1><a href="index.html">Baba</a></h1>
+</header>
+
+<nav>
+  <a href="photos.html">Photos</a>
+  <a href="videos.html" class="active">Videos</a>
+  <a href="music.html">Music</a>
+  <a href="atlas.html">Atlas</a>
+</nav>
+
+<section id="videos">
+  <h2>Videos</h2>
+  <div id="video-grid" class="grid">
+    <p class="empty">Loading…</p>
+  </div>
+</section>
+
+<footer>To add a title, name the file <code>Title -- caption.mp4</code>. Otherwise it just shows the video, no title needed.</footer>
+
+<script src="script.js"></script>
+<script>
+  async function renderVideos(){
+    const grid = document.getElementById("video-grid");
+    const files = await listFolder("videos");
+    const clips = files.filter(f => /\.(mp4|mov|webm)$/i.test(f.name));
+    if(clips.length === 0){
+      grid.innerHTML = '<p class="empty">No videos yet.</p>';
+      return;
+    }
+    grid.innerHTML = clips.map(f => {
+      const { title, caption } = parseMediaName(f.name);
+      return `
+        <figure>
+          <video controls preload="metadata" src="${RAW_BASE}videos/${encodeURIComponent(f.name)}"></video>
+          ${title ? `
+          <figcaption>
+            <div class="title">${title}</div>
+            ${caption ? `<div class="caption">${caption}</div>` : ""}
+          </figcaption>` : ""}
+        </figure>
+      `;
+    }).join("");
+  }
+  renderVideos();
+</script>
+
+</body>
+</html>

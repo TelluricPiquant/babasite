@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Photos — Baba</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1><a href="index.html">Baba</a></h1>
+</header>
+
+<nav>
+  <a href="photos.html" class="active">Photos</a>
+  <a href="videos.html">Videos</a>
+  <a href="music.html">Music</a>
+  <a href="atlas.html">Atlas</a>
+</nav>
+
+<section id="photos">
+  <h2>Photos</h2>
+  <div id="photo-grid" class="grid">
+    <p class="empty">Loading…</p>
+  </div>
+</section>
+
+<footer>To add a title, name the file <code>Title -- caption.jpg</code>. Otherwise it just shows the photo, no title needed.</footer>
+
+<script src="script.js"></script>
+<script>
+  async function renderPhotos(){
+    const grid = document.getElementById("photo-grid");
+    const files = await listFolder("photos");
+    const images = files.filter(f => /\.(jpe?g|png|webp|gif)$/i.test(f.name));
+    if(images.length === 0){
+      grid.innerHTML = '<p class="empty">No photos yet.</p>';
+      return;
+    }
+    grid.innerHTML = images.map(f => {
+      const { title, caption } = parseMediaName(f.name);
+      return `
+        <figure>
+          <img src="${RAW_BASE}photos/${encodeURIComponent(f.name)}" alt="${title || 'photo'}" loading="lazy">
+          ${title ? `
+          <figcaption>
+            <div class="title">${title}</div>
+            ${caption ? `<div class="caption">${caption}</div>` : ""}
+          </figcaption>` : ""}
+        </figure>
+      `;
+    }).join("");
+  }
+  renderPhotos();
+</script>
+
+</body>
+</html>
