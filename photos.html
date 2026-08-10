@@ -53,6 +53,19 @@
     }).join("");
   }
   renderPhotos();
+
+  document.getElementById("photo-grid").addEventListener("click", e => {
+    const img = e.target.closest("img");
+    if(!img) return;
+    const box = document.createElement("div");
+    box.className = "lightbox";
+    box.innerHTML = `<img src="${img.src}" alt="${img.alt}">`;
+    box.addEventListener("click", () => box.remove());
+    document.addEventListener("keydown", function esc(ev){
+      if(ev.key === "Escape"){ box.remove(); document.removeEventListener("keydown", esc); }
+    });
+    document.body.appendChild(box);
+  });
 </script>
 
 </body>

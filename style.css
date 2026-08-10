@@ -70,6 +70,19 @@ section h2{
   grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
   gap:1.5rem;
 }
+@media (min-width:900px){
+  #photo-grid{grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:2rem;}
+}
+#photo-grid img{cursor:zoom-in;}
+.lightbox{
+  position:fixed;inset:0;background:rgba(0,0,0,0.92);
+  display:flex;align-items:center;justify-content:center;
+  z-index:1000;cursor:zoom-out;padding:2vh 2vw;
+}
+.lightbox img{
+  max-width:96vw;max-height:96vh;width:auto;height:auto;
+  border-radius:2px;
+}
 figure{
   margin:0;
   break-inside:avoid;
