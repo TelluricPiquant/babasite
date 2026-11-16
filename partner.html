@@ -62,6 +62,28 @@
   .pt-name{display:flex;align-items:center;gap:10px;margin:4px 4px 2px;font-size:13px;color:var(--ink-soft);}
   .pt-name input{flex:1;max-width:260px;font:500 14px 'Inter',sans-serif;color:var(--ink);background:var(--parchment);border:1px solid var(--line);border-radius:999px;padding:7px 14px;outline:none;box-shadow:inset 0 1px 2px rgba(31,29,26,.06);transition:border-color .2s;}
   .pt-name input:focus{border-color:var(--accent);}
+  /* no grey tap boxes or focus outlines on touch */
+  #partner,#partner *{-webkit-tap-highlight-color:transparent;}
+  #pt-svg *:focus{outline:none;}
+  .pt-short{display:none;}
+
+  /* phones: use the full width, compact controls, bigger two-line labels */
+  @media (max-width:600px){
+    #partner{padding:1.25rem .4rem 2.5rem;}
+    #partner h2{margin:0 .6rem .6rem;}
+    .pt-intro{font-size:14px;margin:0 .6rem 1rem;}
+    .pt-card{padding:8px 4px 10px;border-radius:16px;}
+    .pt-name{margin:2px 6px 0;}
+    .pt-name span{display:none;}
+    .pt-name input{max-width:none;}
+    #pt-svg .pt-lab{font-size:19px;}
+    .pt-row{flex-wrap:nowrap;gap:6px;margin:4px 6px 8px;}
+    .pt-seg button{padding:7px 12px;}
+    .pt-btn{padding:8px 12px;white-space:nowrap;}
+    .pt-long{display:none;}
+    .pt-short{display:inline;}
+    .pt-info{margin:0 6px;padding:10px 14px;}
+  }
   .pt-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
   @media (prefers-reduced-motion:reduce){
     .pt-kin,.pt-kin.in,.pt-knob.dragging .pt-kin{transition:none}
@@ -88,7 +110,7 @@
   <p class="pt-intro">Rate someone on ten things that matter in a partner. Drag a knob outward to rate it higher, or switch to the pie to see the shape of it.</p>
 
   <div class="pt-card">
-    <label class="pt-name"><span>Who are you rating?</span><input id="pt-name" type="text" placeholder="Name (optional)" maxlength="40" autocomplete="off"></label>
+    <label class="pt-name"><span>Who are you rating?</span><input id="pt-name" type="text" placeholder="Name (optional)" aria-label="Who are you rating?" maxlength="40" autocomplete="off"></label>
     <p class="pt-sr">Ten radial sliders rating what you like about a partner, with a toggle that turns them into a pie chart.</p>
     <svg id="pt-svg" viewBox="0 0 680 600" role="group" aria-label="Ten spoke sliders">
       <defs id="pt-defs">
@@ -113,8 +135,8 @@
         <button id="pt-v-p" aria-pressed="false">Pie</button>
       </div>
       <span class="pt-spacer"></span>
-      <button class="pt-btn" id="pt-copy">Copy ratings</button>
-      <button class="pt-btn primary" id="pt-save">Save pie as image</button>
+      <button class="pt-btn" id="pt-copy">Copy<span class="pt-long"> ratings</span></button>
+      <button class="pt-btn primary" id="pt-save">Save<span class="pt-long"> pie as image</span><span class="pt-short"> image</span></button>
     </div>
 
     <div class="pt-info" aria-live="polite">
@@ -177,11 +199,14 @@
   function setInfo(t,v,d){T.textContent=t;V.textContent=v;D.textContent=d}
   function show(i){
     if(cur!==i){cur=i;svg.classList.add("pt-hl");nodes.forEach(function(n,j){var on=j===i;n.g.classList.toggle("on",on);n.sg.classList.toggle("on",on);n.lab.classList.toggle("on",on)})}
+    clearTimeout(touchT);
     var txt=[items[i][0],Math.round(vals[i])+" / 10",items[i][1]];
     if(T.textContent===txt[0]||reduce){setInfo(txt[0],txt[1],txt[2]);return}
-    INFO.classList.add("out");clearTimeout(show.t);
-    show.t=setTimeout(function(){setInfo(txt[0],txt[1],txt[2]);INFO.classList.remove("out")},140);
+    if(show.p===i)return;
+    show.p=i;INFO.classList.add("out");clearTimeout(show.t);
+    show.t=setTimeout(function(){show.p=-1;var j=i;setInfo(items[j][0],Math.round(vals[j])+" / 10",items[j][1]);INFO.classList.remove("out")},140);
   }
+  var touchT=0;
   function unfocus(){if(drag>=0)return;cur=-1;svg.classList.remove("pt-hl");nodes.forEach(function(n){n.g.classList.remove("on");n.sg.classList.remove("on");n.lab.classList.remove("on")})}
   svg.addEventListener("pointerleave",unfocus);
 
@@ -221,14 +246,19 @@
     var ln=el("tspan",{"font-weight":600,fill:"#241F1A"},lab);ln.textContent=it[0];
     var lv=el("tspan",{dx:6,style:"font-family:'Space Grotesk',sans-serif"},lab);
 
-    [hit,k,wh,lab].forEach(function(n){n.addEventListener("pointerenter",function(){show(i)});n.addEventListener("click",function(){show(i)})});
+    [hit,k,wh,lab].forEach(function(n){n.addEventListener("pointerenter",function(e){if(e.pointerType==="mouse")show(i)});n.addEventListener("click",function(){show(i);if(!matchMedia("(hover:hover)").matches){clearTimeout(touchT);touchT=setTimeout(unfocus,1400)}})});
     function start(e){drag=i;k.classList.add("dragging");svg.setPointerCapture(e.pointerId);show(i);move(e);e.preventDefault()}
     hit.addEventListener("pointerdown",start);k.addEventListener("pointerdown",start);
     k.addEventListener("focus",function(){show(i)});
     k.addEventListener("blur",function(){if(!svg.matches(":hover"))unfocus()});
     k.addEventListener("keydown",function(e){var d=(e.key=="ArrowUp"||e.key=="ArrowRight")?1:(e.key=="ArrowDown"||e.key=="ArrowLeft")?-1:0;if(d){setVal(i,vals[i]+d);e.preventDefault()}});
-    nodes.push({a:a,a0:a0,a1:a1,g:g,led:led,k:k,kin:kin,tint:tint,face:face,num:num,sg:sg,w:w,tg:tg,sgr:sgr,mb:mb,mfT:mfT,mfS:mfS,lab:lab,lv:lv,last:null});
+    nodes.push({lp:lp,ln:ln,a:a,a0:a0,a1:a1,g:g,led:led,k:k,kin:kin,tint:tint,face:face,num:num,sg:sg,w:w,tg:tg,sgr:sgr,mb:mb,mfT:mfT,mfS:mfS,lab:lab,lv:lv,last:null});
   });
+  var narrow=window.matchMedia("(max-width:600px)");
+  function labelMode(){var two=narrow.matches;nodes.forEach(function(n){
+    if(two){n.ln.setAttribute("dy","-0.55em");n.lv.setAttribute("x",n.lp[0]);n.lv.setAttribute("dy","1.15em");n.lv.setAttribute("dx",0)}
+    else{n.ln.removeAttribute("dy");n.lv.removeAttribute("x");n.lv.removeAttribute("dy");n.lv.setAttribute("dx",6)}})}
+  labelMode();if(narrow.addEventListener)narrow.addEventListener("change",labelMode);else narrow.addListener(labelMode);
   el("circle",{cx:cx,cy:cy,r:34,fill:"url(#pt-hub)",stroke:"#d9d0c0","stroke-width":1.2,filter:"url(#pt-sh)",style:"pointer-events:none"},gS);
   el("circle",{cx:cx,cy:cy,r:22,fill:"none",stroke:"rgba(80,62,40,.12)","stroke-width":1,style:"pointer-events:none"},gS);
   el("circle",{cx:cx,cy:cy,r:pr1,fill:"url(#pt-gloss)",style:"pointer-events:none"},gP);
@@ -302,7 +332,8 @@
 
   function move(e){if(drag<0)return;var m=svg.getScreenCTM().inverse(),x=e.clientX*m.a+e.clientY*m.c+m.e,y=e.clientX*m.b+e.clientY*m.d+m.f,n=nodes[drag];
     var t=((x-cx)*Math.cos(n.a)+(y-cy)*Math.sin(n.a)-r0)/(r1-r0);setVal(drag,clamp(t,0,1)*10)}
-  function endDrag(){if(drag>=0)nodes[drag].k.classList.remove("dragging");drag=-1}
+  function endDrag(e){if(drag>=0)nodes[drag].k.classList.remove("dragging");drag=-1;
+    if(e&&e.pointerType&&e.pointerType!=="mouse"){clearTimeout(touchT);touchT=setTimeout(unfocus,1400)}}
   svg.addEventListener("pointermove",move);
   svg.addEventListener("pointerup",endDrag);svg.addEventListener("pointercancel",endDrag);
 
