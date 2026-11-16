@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Partner — Baba</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+  #partner{
+    --parchment:#f7f5f0; --paper:#fffefb; --ink:#1f1d1a; --ink-soft:#6b665e; --line:#e0dcd2; --accent:#2f4d3a;
+    font-family:'Inter',system-ui,sans-serif; color:var(--ink);
+    max-width:760px;
+  }
+  #partner h2{font-family:'Fraunces',serif;font-optical-sizing:auto;font-weight:600;letter-spacing:-0.01em;}
+  .pt-intro{font-size:14.5px;line-height:1.5;color:var(--ink-soft);margin:-1rem 0 1.5rem;}
+  .pt-card{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:14px 14px 16px;box-shadow:0 6px 20px rgba(36,31,26,0.08);}
+  #pt-svg{display:block;width:100%;height:auto;touch-action:none;font-family:'Inter',system-ui,sans-serif;}
+  .pt-knob{cursor:grab;outline:none}
+  .pt-knob:focus-visible .pt-knob-face{stroke:var(--ink);stroke-width:2.5}
+  .pt-row{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:8px 4px 12px;}
+  .pt-seg{display:inline-flex;background:var(--parchment);border:1px solid var(--line);border-radius:999px;padding:3px;}
+  .pt-seg button{font:500 13px 'Inter',sans-serif;color:var(--ink-soft);background:none;border:0;border-radius:999px;padding:6px 14px;cursor:pointer;}
+  .pt-seg button[aria-pressed="true"]{background:var(--ink);color:#fff;}
+  .pt-spacer{flex:1}
+  .pt-btn{font:500 13px 'Inter',sans-serif;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer;}
+  .pt-btn:hover{border-color:var(--accent);}
+  .pt-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .pt-btn.primary:hover{filter:brightness(1.06);}
+  .pt-info{background:var(--parchment);border:1px solid var(--line);border-radius:12px;padding:12px 16px;min-height:66px;}
+  .pt-info-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;}
+  #pt-t{font-family:'Fraunces',serif;font-weight:600;font-size:18px;}
+  #pt-v{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:18px;}
+  #pt-d{font-size:13.5px;line-height:1.45;color:var(--ink-soft);margin-top:3px;}
+  .pt-name{display:flex;align-items:center;gap:10px;margin:4px 4px 2px;font-size:13px;color:var(--ink-soft);}
+  .pt-name input{flex:1;max-width:260px;font:500 14px 'Inter',sans-serif;color:var(--ink);background:var(--parchment);border:1px solid var(--line);border-radius:999px;padding:7px 14px;outline:none;}
+  .pt-name input:focus{border-color:var(--accent);}
+  .pt-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+</style>
+</head>
+<body>
+
+<header>
+  <h1><a href="index.html">Baba</a></h1>
+</header>
+
+<nav>
+  <a href="photos.html">Photos</a>
+  <a href="videos.html">Videos</a>
+  <a href="music.html">Music</a>
+  <a href="atlas.html">Atlas</a>
+  <a href="partner.html" class="active">Partner</a>
+</nav>
+
+<section id="partner">
+  <h2>Partner</h2>
+  <p class="pt-intro">Rate someone on ten things that matter in a partner. Drag a knob outward to rate it higher, or switch to the pie to see the shape of it.</p>
+
+  <div class="pt-card">
+    <label class="pt-name"><span>Who are you rating?</span><input id="pt-name" type="text" placeholder="Name (optional)" maxlength="40" autocomplete="off"></label>
+    <p class="pt-sr">Ten radial sliders rating what you like about a partner, with a toggle that turns them into a pie chart.</p>
+    <svg id="pt-svg" viewBox="0 0 680 600" role="group" aria-label="Ten spoke sliders">
+      <circle cx="340" cy="300" r="240" fill="#F5F0E6" stroke="#ddd3c0" stroke-width="1.5"/>
+      <g id="pt-grid"></g>
+      <g id="pt-s"></g>
+      <g id="pt-p" style="display:none"></g>
+      <g id="pt-l"></g>
+    </svg>
+
+    <div class="pt-row">
+      <div class="pt-seg" role="group" aria-label="View">
+        <button id="pt-v-s" aria-pressed="true">Sliders</button>
+        <button id="pt-v-p" aria-pressed="false">Pie</button>
+      </div>
+      <span class="pt-spacer"></span>
+      <button class="pt-btn" id="pt-copy">Copy ratings</button>
+      <button class="pt-btn primary" id="pt-save">Save pie as image</button>
+    </div>
+
+    <div class="pt-info" aria-live="polite">
+      <div class="pt-info-top"><span id="pt-t">Hover a spoke</span><span id="pt-v"></span></div>
+      <div id="pt-d">Tap or hover any spoke to see what it means.</div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+  // name, description, color, starting value
+  var items=[
+    ["Attraction","The physical pull. Looks, touch, voice, presence.","#B81830",7],
+    ["Chemistry","How you click. Banter, humor, the ease between you.","#D95F0E",5],
+    ["Character","Who they are to everyone, not only to you.","#8F4A0A",5],
+    ["Care","How they treat you day to day. Attention, kindness, effort.","#8E24AA",5],
+    ["Trust","How safe and certain you feel. Honesty and reliability.","#2D7DD2",5],
+    ["Alignment","Shared values, goals, and the life you each want.","#00806F",4],
+    ["Admiration","What you respect or look up to in them.","#E0A800",10],
+    ["Support","What they do for you. Help, showing up, lightening the load.","#C8861B",5],
+    ["Self","Who you become around them, and whether you like that person.","#7A6C8F",5],
+    ["History","The time, memories, and hard things you have shared.","#1E7B3C",5]
+  ];
+  var NS="http://www.w3.org/2000/svg",cx=340,cy=300,r0=58,r1=220,pr0=26,pr1=226;
+  var vals=items.map(function(it){return it[3]}),nodes=[],drag=-1;
+  var svg=document.getElementById("pt-svg"),gG=document.getElementById("pt-grid"),gS=document.getElementById("pt-s"),gP=document.getElementById("pt-p"),gL=document.getElementById("pt-l");
+  var T=document.getElementById("pt-t"),V=document.getElementById("pt-v"),D=document.getElementById("pt-d");
+
+  function el(t,a,p){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e}
+  function ang(i){return(i*36-90)*Math.PI/180}
+  function pt(r,a){return[cx+r*Math.cos(a),cy+r*Math.sin(a)]}
+  function wedge(ri,ro,a0,a1,X,Y){X=X||cx;Y=Y||cy;
+    var f=function(r,a){return[X+r*Math.cos(a),Y+r*Math.sin(a)]};
+    var p=f(ro,a0),q=f(ro,a1),s=f(ri,a1),u=f(ri,a0);
+    return"M"+p[0].toFixed(1)+" "+p[1].toFixed(1)+"A"+ro+" "+ro+" 0 0 1 "+q[0].toFixed(1)+" "+q[1].toFixed(1)+"L"+s[0].toFixed(1)+" "+s[1].toFixed(1)+"A"+ri+" "+ri+" 0 0 0 "+u[0].toFixed(1)+" "+u[1].toFixed(1)+"Z"}
+  function hue(hex){var r=parseInt(hex.substr(1,2),16)/255,g=parseInt(hex.substr(3,2),16)/255,b=parseInt(hex.substr(5,2),16)/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn,h=0;
+    if(d){h=mx==r?((g-b)/d)%6:mx==g?(b-r)/d+2:(r-g)/d+4}h*=60;return h<0?h+360:h}
+  // 10 = full-blast neon, 1 = barely tinted grey
+  function vivid(i,v){var t=v/10,s=Math.round(3+97*Math.pow(t,1.3)),l=Math.round(82-32*t);return"hsl("+Math.round(items[i][4])+","+s+"%,"+l+"%)"}
+  items.forEach(function(it){it[4]=hue(it[2])});
+  function show(i){T.textContent=items[i][0];V.textContent=vals[i]+" / 10";D.textContent=items[i][1]}
+
+  // pie gridlines at 5 and 10 (only visible in pie view)
+  [5,10].forEach(function(v){el("circle",{cx:cx,cy:cy,r:pr0+(pr1-pr0)*v/10,fill:"none",stroke:"#ddd3c0","stroke-width":1,"stroke-dasharray":v==10?"0":"3 4"},gP)});
+
+  items.forEach(function(it,i){
+    var a=ang(i),p0=pt(r0,a),p1=pt(r1,a);
+    el("line",{x1:p0[0],y1:p0[1],x2:p1[0],y2:p1[1],stroke:"#e6dccb","stroke-width":10,"stroke-linecap":"round"},gS);
+    var led=el("line",{x1:p0[0],y1:p0[1],x2:p0[0],y2:p0[1],"stroke-width":10,"stroke-linecap":"round"},gS);
+    var hit=el("line",{x1:p0[0],y1:p0[1],x2:p1[0],y2:p1[1],stroke:"transparent","stroke-width":30,"stroke-linecap":"round",style:"cursor:pointer"},gS);
+    var k=el("g",{class:"pt-knob",tabindex:0,role:"slider","aria-label":it[0],"aria-valuemin":0,"aria-valuemax":10},gS);
+    var face=el("circle",{r:16,fill:"#fffdf8","stroke-width":3,class:"pt-knob-face",style:"filter:drop-shadow(0 2px 3px rgba(36,31,26,.25))"},k);
+    var num=el("text",{"text-anchor":"middle","dominant-baseline":"central","font-size":13,"font-weight":600,fill:"#241F1A",style:"pointer-events:none;font-family:'Space Grotesk',sans-serif"},k);
+
+    var a0=a-Math.PI/10,a1=a+Math.PI/10;
+    el("path",{d:wedge(pr0,pr1,a0,a1),fill:"#efe7d8",stroke:"#fffdf8","stroke-width":2},gP);
+    var w=el("path",{fill:it[2],stroke:"#fffdf8","stroke-width":2},gP);
+    var wh=el("path",{d:wedge(pr0,pr1,a0,a1),fill:"transparent",style:"cursor:pointer"},gP);
+
+    var lp=pt(262,a),c=Math.cos(a);
+    var lab=el("text",{x:lp[0],y:lp[1],"text-anchor":c>.3?"start":c<-.3?"end":"middle","dominant-baseline":"central","font-size":14,fill:"#5c554c",style:"cursor:default"},gL);
+    var ln=el("tspan",{"font-weight":600,fill:"#241F1A"},lab);ln.textContent=it[0];
+    var lv=el("tspan",{dx:6,style:"font-family:'Space Grotesk',sans-serif"},lab);
+
+    [hit,k,wh,lab].forEach(function(n){n.addEventListener("pointerenter",function(){show(i)});n.addEventListener("click",function(){show(i)})});
+    function start(e){drag=i;svg.setPointerCapture(e.pointerId);move(e);e.preventDefault()}
+    hit.addEventListener("pointerdown",start);k.addEventListener("pointerdown",start);
+    k.addEventListener("focus",function(){show(i)});
+    k.addEventListener("keydown",function(e){var d=(e.key=="ArrowUp"||e.key=="ArrowRight")?1:(e.key=="ArrowDown"||e.key=="ArrowLeft")?-1:0;if(d){vals[i]=Math.max(0,Math.min(10,vals[i]+d));draw(i);show(i);e.preventDefault()}});
+    nodes.push({a:a,a0:a0,a1:a1,led:led,k:k,num:num,w:w,lv:lv,face:face});
+  });
+  el("circle",{cx:cx,cy:cy,r:34,fill:"#fffdf8",stroke:"#ddd3c0","stroke-width":1.5,style:"pointer-events:none"},gS);
+  el("circle",{cx:cx,cy:cy,r:pr0-3,fill:"#fffdf8",stroke:"#ddd3c0","stroke-width":1.5,style:"pointer-events:none"},gP);
+
+  function draw(i){var n=nodes[i],v=vals[i],r=r0+(r1-r0)*v/10,p=pt(r,n.a);
+    n.led.setAttribute("x2",p[0]);n.led.setAttribute("y2",p[1]);n.led.style.display=v>0?"":"none";var vc=vivid(i,v);n.led.setAttribute("stroke",vc);n.face.setAttribute("stroke",v>0?vc:"#cfc6b5");
+    n.k.setAttribute("transform","translate("+p[0].toFixed(1)+","+p[1].toFixed(1)+")");n.k.setAttribute("aria-valuenow",v);n.num.textContent=v;
+    n.lv.textContent=v;
+    if(v>0){n.w.setAttribute("d",wedge(pr0,pr0+(pr1-pr0)*v/10,n.a0,n.a1));n.w.style.display=""}else n.w.style.display="none"}
+  function move(e){if(drag<0)return;var m=svg.getScreenCTM().inverse(),x=e.clientX*m.a+e.clientY*m.c+m.e,y=e.clientX*m.b+e.clientY*m.d+m.f,n=nodes[drag];
+    var t=((x-cx)*Math.cos(n.a)+(y-cy)*Math.sin(n.a)-r0)/(r1-r0);vals[drag]=Math.round(Math.max(0,Math.min(1,t))*10);draw(drag);show(drag)}
+  svg.addEventListener("pointermove",move);
+  svg.addEventListener("pointerup",function(){drag=-1});svg.addEventListener("pointercancel",function(){drag=-1});
+  for(var i=0;i<10;i++)draw(i);
+
+  // view toggle
+  var bS=document.getElementById("pt-v-s"),bP=document.getElementById("pt-v-p");
+  function setView(pie){bS.setAttribute("aria-pressed",!pie);bP.setAttribute("aria-pressed",pie);gS.style.display=pie?"none":"";gP.style.display=pie?"":"none"}
+  bS.addEventListener("click",function(){setView(false)});bP.addEventListener("click",function(){setView(true)});
+
+  // copy ratings
+  document.getElementById("pt-copy").addEventListener("click",function(){
+    var who=nameVal(),txt=(who?who+" ":"")+"ratings (out of 10): "+items.map(function(it,i){return it[0]+" "+vals[i]}).join(", ")+".";
+    T.textContent="Ratings";V.textContent="";D.textContent=txt;
+    if(navigator.clipboard)navigator.clipboard.writeText(txt).then(function(){T.textContent="Ratings copied"},function(){});
+  });
+
+  function nameVal(){return document.getElementById("pt-name").value.trim()}
+
+  // export a clean labeled image
+  document.getElementById("pt-save").addEventListener("click",function(){
+    var fonts=["600 40px Fraunces","400 16px Inter","600 16px Inter","600 16px 'Space Grotesk'"];
+    var ready=document.fonts&&document.fonts.load?Promise.all(fonts.map(function(f){return document.fonts.load(f)})):Promise.resolve();
+    ready.then(exportPNG,exportPNG);
+  });
+
+  function exportPNG(){
+    var W=1200,H=780,S=2,cv=document.createElement("canvas");cv.width=W*S;cv.height=H*S;
+    var x=cv.getContext("2d");x.scale(S,S);
+    var INK="#241F1A",SOFT="#5c554c",LINE="#ddd3c0",PAPER="#fffdf8",TRACK="#efe7d8";
+    x.fillStyle=PAPER;x.fillRect(0,0,W,H);
+
+    // title
+    var total=vals.reduce(function(a,b){return a+b},0),avg=(total/10).toFixed(1);
+    var d=new Date(),ds=d.toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"});
+    x.fillStyle=INK;x.font="600 40px Fraunces, Georgia, serif";x.textBaseline="alphabetic";x.textAlign="left";
+    var who=nameVal();x.fillText(who?who:"Partner rating",56,86);
+    x.fillStyle=SOFT;x.font="400 16px Inter, sans-serif";
+    x.fillText("Ten qualities, each rated 0 to 10. Longer slice = higher rating.  ·  Average "+avg+" / 10  ·  "+ds,56,118);
+    x.strokeStyle=LINE;x.lineWidth=1;x.beginPath();x.moveTo(56,142);x.lineTo(W-56,142);x.stroke();
+
+    // chart
+    var CX=356,CY=455,R0=24,R1=220;
+    function arcW(ri,ro,a0,a1){x.beginPath();x.arc(CX,CY,ro,a0,a1);x.arc(CX,CY,ri,a1,a0,true);x.closePath()}
+    items.forEach(function(it,i){var a=ang(i),a0=a-Math.PI/10,a1=a+Math.PI/10;
+      arcW(R0,R1,a0,a1);x.fillStyle=TRACK;x.fill();x.strokeStyle=PAPER;x.lineWidth=3;x.stroke();
+      if(vals[i]>0){arcW(R0,R0+(R1-R0)*vals[i]/10,a0,a1);x.fillStyle=it[2];x.fill();x.stroke()}});
+    // scale rings
+    [5,10].forEach(function(v){x.beginPath();x.arc(CX,CY,R0+(R1-R0)*v/10,0,Math.PI*2);x.strokeStyle=LINE;x.lineWidth=1;x.setLineDash(v==5?[3,4]:[]);x.stroke()});x.setLineDash([]);
+    x.beginPath();x.arc(CX,CY,R0-2,0,Math.PI*2);x.fillStyle=PAPER;x.fill();x.strokeStyle=LINE;x.stroke();
+    // labels around
+    items.forEach(function(it,i){var a=ang(i),c=Math.cos(a),lx=CX+(R1+26)*c,ly=CY+(R1+26)*Math.sin(a);
+      x.textAlign=c>.3?"left":c<-.3?"right":"center";x.textBaseline="middle";
+      var name=it[0],val=String(vals[i]);
+      x.font="600 16px Inter, sans-serif";var wn=x.measureText(name+" ").width;
+      x.font="600 16px 'Space Grotesk', sans-serif";var wv=x.measureText(val).width;
+      var tw=wn+wv,start=x.textAlign=="left"?lx:x.textAlign=="right"?lx-tw:lx-tw/2;
+      x.textAlign="left";
+      x.font="600 16px Inter, sans-serif";x.fillStyle=INK;x.fillText(name,start,ly);
+      x.font="600 16px 'Space Grotesk', sans-serif";x.fillStyle=it[2];x.fillText(val,start+wn,ly)});
+
+    // ranked list
+    var order=items.map(function(it,i){return i}).sort(function(a,b){return vals[b]-vals[a]||a-b});
+    var LX=680,LW=W-56-LX,top=196,rowH=52;
+    x.fillStyle=SOFT;x.font="600 12px Inter, sans-serif";x.textAlign="left";x.textBaseline="alphabetic";
+    x.fillText("RANKED",LX,top-22);
+    order.forEach(function(i,r){var y=top+r*rowH,it=items[i];
+      x.fillStyle=it[2];x.beginPath();x.arc(LX+7,y+7,7,0,Math.PI*2);x.fill();
+      x.fillStyle=INK;x.font="600 17px Inter, sans-serif";x.textBaseline="middle";x.textAlign="left";x.fillText(it[0],LX+24,y+7);
+      x.textAlign="right";x.font="600 17px 'Space Grotesk', sans-serif";x.fillText(vals[i]+" / 10",LX+LW,y+7);
+      var by=y+24,bw=LW-24;
+      x.fillStyle=TRACK;roundRect(LX+24,by,bw,7,3.5);x.fill();
+      if(vals[i]>0){x.fillStyle=it[2];roundRect(LX+24,by,bw*vals[i]/10,7,3.5);x.fill()}});
+    function roundRect(X,Y,w,h,r){r=Math.min(r,w/2);x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath()}
+
+    cv.toBlob(function(b){var u=URL.createObjectURL(b),aEl=document.createElement("a");
+      aEl.href=u;aEl.download=(who?who.replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"-").toLowerCase()+"-":"partner-")+"chart-"+d.toISOString().slice(0,10)+".png";document.body.appendChild(aEl);aEl.click();aEl.remove();
+      setTimeout(function(){URL.revokeObjectURL(u)},2000);
+      T.textContent="Image saved";V.textContent="";D.textContent="Check your downloads for the PNG."},"image/png");
+  }
+})();
+</script>
+
+</body>
+</html>
